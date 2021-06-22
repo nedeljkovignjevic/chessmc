@@ -58,8 +58,14 @@ def move():
 
     try:
         STATE.board.push_san(move)
+        STATE.serialize()
+
         computer_move = STATE.board.san(random_move(STATE))
+        if STATE.board.is_game_over():
+            return app.response_class(response="Game over!", status=200)
+
         STATE.board.push_san(computer_move)
+        STATE.serialize()
     except Exception:
         traceback.print_exc()
 
