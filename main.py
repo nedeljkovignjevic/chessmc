@@ -1,3 +1,4 @@
+import copy
 import random
 
 import chess
@@ -8,6 +9,7 @@ from chessmc.utils import to_svg
 
 from flask import Flask, request
 
+from chessmc.mcts import GameState, uct_search
 
 app = Flask(__name__)
 
@@ -58,8 +60,11 @@ def move():
 
     try:
         STATE.board.push_san(move)
-        computer_move = STATE.board.san(random_move(STATE))
-        STATE.board.push_san(computer_move)
+        # print(STATE.legal_moves)
+        # computer_move = STATE.board.san(random_move(STATE))
+        computer_move = uct_search(GameState(state=copy.deepcopy(STATE)), n_simulations=200)
+        # print(computer_move)
+        STATE.board.push_san(STATE.board.san(computer_move))
     except Exception:
         traceback.print_exc()
 
