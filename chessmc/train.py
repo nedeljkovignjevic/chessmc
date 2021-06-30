@@ -2,11 +2,12 @@ import torch.nn as nn
 import torch.utils.data
 
 from model import Model, ChessDataset
-from torch import optim, Tensor
+from torch import optim
+
 
 if __name__ == '__main__':
     dataset = ChessDataset()
-    train_loader = torch.utils.data.DataLoader(dataset, batch_size=256, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=128, shuffle=True)
     model = Model()
     optimizer = optim.Adam(model.parameters())
     loss_fn = nn.MSELoss()
@@ -30,3 +31,4 @@ if __name__ == '__main__':
             n_losses += 1
 
         print(f'epoch: {epoch}, loss: {cumulative_loss / n_losses}')
+        torch.save(model.state_dict(), '../nets/geohot.pth')

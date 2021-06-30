@@ -8,17 +8,17 @@ from state import State
 def get_training_data():
     inputs, outputs = [], []
 
-    results = {'1/2-1/2': 0,
-               '0-1': -1,
-               '1-0': 1}
-
-    result_counter = {'1/2-1/2': 0,
-                      '0-1': 0,
-                      '1-0': 0}
+    results = {'1/2-1/2': 0, '0-1': -1, '1-0': 1}
+    result_counter = {'1/2-1/2': 0, '0-1': 0, '1-0': 0}
 
     sample_num = 0
-    for file in os.listdir('../data'):
-        pgn = open(os.path.join('../data', file))
+    for file in os.listdir('../content/data'):
+
+        if os.path.isdir(os.path.join('../content/data', file)):
+            continue
+
+        pgn = open(os.path.join('../content/data', file), encoding='ISO-8859-1')
+
         while True:
             game = chess.pgn.read_game(pgn)
             if game is None:
