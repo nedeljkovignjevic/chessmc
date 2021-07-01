@@ -60,13 +60,15 @@ class Node:
 
     def expand(self, children_priors):
         self.expanded = True
-        self.children_priors = children_priors
-        state = self.state.state
+        self.children_priors = children_priors * self.children_priors
+        state = copy.deepcopy(self.state.state)
         while state.board.is_game_over() is not True:
             move = state.board.san(random_move(state))
             state.board.push_san(move)
-        # print(state.board)
-        # print(state.board.outcome())
+
+        print(state.board)
+        print(state.board.outcome())
+
         winner = state.board.outcome().winner
         if winner is True:
             self.win += 1
@@ -80,9 +82,11 @@ class Node:
             self.children[move] = Node(self.state.play(move), move, parent=self)
         return self.children[move]
 
-    def backup(self, value_estimate: float):
+    def backup(self, value_estimate: float, root):
         current = self
-        while current.parent is not None:
+        wins = current.win
+        visits = current.number_visits
+        while current.parent is not None and current.parent is not root:
             # fix for returning same variation each time
             # current.number_visits += 1
             # current.total_value += value_estimate
@@ -112,15 +116,34 @@ class NeuralNet:
 def uct_search(state, n_simulations):
     root = Node(state, move=None, parent=TestNode())
 
-    for _ in range(n_simulations): # if state.children_len > 100 else state.children_len):
-        leaf = copy.deepcopy(root.select_leaf())
+    for i in range(root.state.children_len):
+        root.children[i] = Node(root.state.play(i), i, parent=root)
+        root.children[i].expanded = True
+        state = copy.deepcopy(root.children[i].state.state)
+        while state.board.is_game_over() is not True:
+            move = state.board.san(random_move(state))
+            state.board.push_san(move)
+        winner = state.board.outcome().winner
+        if winner is True:
+            root.children[i].win += 1
+        elif winner is False:
+            root.children[i].lose += 1
+        root.children_number_visits[i] += 1
+        root.children_total_values[i] += root.children[i].win
+
+    for _ in range(n_simulations):  # if state.children_len > 100 else state.children_len):
+        leaf = root.select_leaf()
+        print(leaf.move)
+        print(leaf.parent)
+        print(leaf.children)
         children_priors, value_estimate = NeuralNet.evaluate(leaf.state)
         leaf.expand(children_priors)
-        root.children_total_values[current_child] += leaf.win - leaf.lose
-        # leaf.backup(value_estimate)
-    # print(root.children_number_visits)
-    # print(root.children_priors)
-    # print(root.children_total_values)
+        root.children_total_values[current_child] = leaf.win  # - leaf.lose
+        root.children_number_visits[current_child] += 1
+        # leaf.backup(value_estimate, root)
+    print(root.children)
+    print(root.children_number_visits)
+    print(root.children_total_values)
     # return np.argmax(root.children_number_visits), np.argmax(root.children_priors), np.argmax(root.children_total_values)
     return state.state.legal_moves[np.argmax(root.children_total_values)]
 
