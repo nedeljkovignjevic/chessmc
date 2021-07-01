@@ -7,6 +7,9 @@ In the past decade or so, MCTS really has been growing to be much more popular t
 chessmc should be similar to AlphaZero in the way that it does not use random rollouts.<br>
 Deep learning is used to evaluate board position. Trained net takes in a serialized board and outputs range from -1 (black wins) to 1 (white wins).
 
+## Models
+1. MLP (layers: 1048, 500, 50, epochs: 100, batch_size: 128) - tanh loss: 0.148981 
+
 ## Demo
 ![chessmc](https://user-images.githubusercontent.com/54076398/123994421-a7b34980-d9cd-11eb-8ef9-7e2174e5c09f.png)
 

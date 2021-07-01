@@ -33,11 +33,11 @@ class Model(nn.Module):
         self.dropout = nn.Dropout(0.2)
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
+        x = F.leaky_relu(self.fc1(x))
         x = self.dropout(x)
-        x = F.relu(self.fc2(x))
+        x = F.leaky_relu(self.fc2(x))
         x = self.dropout(x)
-        x = F.relu(self.fc3(x))
+        x = F.leaky_relu(self.fc3(x))
         x = self.dropout(x)
 
         x = self.last(x)
