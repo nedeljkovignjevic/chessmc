@@ -15,6 +15,7 @@ class Node:
         self.expanded = False
         self.children = {}
         self.children_priors = np.zeros([self.state.children_len], dtype=np.float32)
+        self.children_priors.fill(2)
         self.children_total_values = np.zeros([self.state.children_len], dtype=np.float32)
         self.children_number_visits = np.zeros([self.state.children_len], dtype=np.float32)
         self.win = 0
@@ -50,51 +51,41 @@ class Node:
         if current.parent.parent is None:
             current.expanded = True
         while current.expanded:
-            # current.number_visits += 1     # fix for returning same variation each time
-            # current.total_value -= 1    # fix for returning same variation each time
-            best_move = current.best_child()
             global current_child
+            best_move = current.best_child()
             current_child = best_move
             current = current.maybe_add_child(best_move)
         return current
 
     def expand(self, children_priors):
         self.expanded = True
-        self.children_priors = children_priors * self.children_priors
+        # self.children_priors = children_priors * self.children_priors
         state = copy.deepcopy(self.state.state)
         while state.board.is_game_over() is not True:
             move = state.board.san(random_move(state))
             state.board.push_san(move)
-
-        print(state.board)
-        print(state.board.outcome())
-
         winner = state.board.outcome().winner
         if winner is True:
             self.win += 1
-            # print("POBJEDAA")
         elif winner is False:
             self.lose += 1
-            # print("PORAZ")
+        self.number_visits += 1
 
     def maybe_add_child(self, move):
-        if move not in self.children:
+        if move >= len(self.children) or self.children[move] is None:
             self.children[move] = Node(self.state.play(move), move, parent=self)
         return self.children[move]
 
-    def backup(self, value_estimate: float, root):
+    def backup(self, value_estimate: float):
         current = self
-        wins = current.win
-        visits = current.number_visits
-        while current.parent is not None and current.parent is not root:
-            # fix for returning same variation each time
-            # current.number_visits += 1
-            # current.total_value += value_estimate
-            # current.total_value += value_estimate + 1
-            current.total_value += (value_estimate * self.state.turn)
-            # current.total_value += (value_estimate * self.state.turn) + 1
+        current.total_value = current.win
+        while current.parent.parent is not None:
+            #wins += current.total_value
+            #visits += current.number_visits
+            current.parent.total_value = np.sum(current.parent.children_total_values, dtype=np.float32)
+            current.parent.number_visits = np.sum(current.parent.children_number_visits, dtype=np.float32)
             current = current.parent
-
+           
 
 def random_move(state):
     return random.choice([move for move in state.legal_moves])
@@ -113,10 +104,9 @@ class NeuralNet:
         return 2.0, 1.0
 
 
-def uct_search(state, n_simulations):
-    root = Node(state, move=None, parent=TestNode())
-
-    for i in range(root.state.children_len):
+def visitChildren(root, toRange):
+    root.children_number_visits.fill(1)
+    for i in range(toRange):
         root.children[i] = Node(root.state.play(i), i, parent=root)
         root.children[i].expanded = True
         state1 = copy.deepcopy(root.children[i].state.state)
@@ -126,25 +116,21 @@ def uct_search(state, n_simulations):
         winner = state1.board.outcome().winner
         if winner is True:
             root.children[i].win += 1
+            root.children_total_values[i] += 1
         elif winner is False:
             root.children[i].lose += 1
-        root.children_number_visits[i] += 1
-        root.children_total_values[i] += root.children[i].win
+        root.children[i].backup(1)
+
+def uct_search(state, n_simulations):
+    root = Node(state, move=None, parent=TestNode())
+    root.expanded = True
+    visitChildren(root, root.state.children_len)
 
     for _ in range(n_simulations):  # if state.children_len > 100 else state.children_len):
         leaf = root.select_leaf()
-        print(leaf.move)
-        print(leaf.parent)
-        print(leaf.children)
         children_priors, value_estimate = NeuralNet.evaluate(leaf.state)
         leaf.expand(children_priors)
-        root.children_total_values[current_child] = leaf.win  # - leaf.lose
-        root.children_number_visits[current_child] += 1
-        # leaf.backup(value_estimate, root)
-    print(root.children)
-    print(root.children_number_visits)
-    print(root.children_total_values)
-    # return np.argmax(root.children_number_visits), np.argmax(root.children_priors), np.argmax(root.children_total_values)
+        leaf.backup(value_estimate)
     return state.state.legal_moves[np.argmax(root.children_total_values)]
 
 
@@ -156,16 +142,6 @@ class GameState:
 
     def play(self, move):
         state = copy.deepcopy(self.state)
-        # print(self.state.legal_moves)
-        # print(move)
         move_str = self.state.board.san(self.state.legal_moves[move])
         state.board.push_san(move_str)
         return GameState(-self.turn, state)
-
-
-# n_simulations = 10000
-# import time
-# tick = time.time()
-# print(uct_search(GameState(), n_simulations))
-# tock = time.time()
-# print("Took %s sec to run %s times" % (tock - tick, n_simulations))
