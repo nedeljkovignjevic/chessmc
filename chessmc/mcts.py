@@ -119,11 +119,11 @@ def uct_search(state, n_simulations):
     for i in range(root.state.children_len):
         root.children[i] = Node(root.state.play(i), i, parent=root)
         root.children[i].expanded = True
-        state = copy.deepcopy(root.children[i].state.state)
-        while state.board.is_game_over() is not True:
-            move = state.board.san(random_move(state))
-            state.board.push_san(move)
-        winner = state.board.outcome().winner
+        state1 = copy.deepcopy(root.children[i].state.state)
+        while state1.board.is_game_over() is not True:
+            move = state1.board.san(random_move(state1))
+            state1.board.push_san(move)
+        winner = state1.board.outcome().winner
         if winner is True:
             root.children[i].win += 1
         elif winner is False:

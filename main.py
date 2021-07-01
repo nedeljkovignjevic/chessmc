@@ -63,6 +63,8 @@ def move():
         # print(STATE.legal_moves)
         # computer_move = STATE.board.san(random_move(STATE))
         computer_move = uct_search(GameState(state=copy.deepcopy(STATE)), n_simulations=200)
+        if STATE.board.is_game_over():
+            return app.response_class(response="Game over!", status=200)
         # print(computer_move)
         STATE.board.push_san(STATE.board.san(computer_move))
     except Exception:
