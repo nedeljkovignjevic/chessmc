@@ -20,13 +20,12 @@
                 </div>
 
                 <div id="board" style="width: 600px; margin: 40px auto; text-align: center;"></div>
-
+                <p></p>
                 <div class="btn-group" role="group" aria-label="Basic example" style="margin-top: 30px;">
                     <a type="button"  class="btn btn-dark" style="margin-right: 10px; background-color: #b58863" href="/self-play">Self-play</a>
                     <button  type="button" class="btn btn-dark"  style="background-color: #b58863" onclick="newGame()">New game</button><br/>
                 </div>
             </div>
-            <p></p>
         </div>
         <script type="text/javascript">
 
@@ -47,8 +46,8 @@
                 var promotion = piece.toLowerCase().charAt(1) == 'p' && parseInt(target.charAt(1)) == 8;
 
                 $.get('/move', {'from': get_square(source), 'to': get_square(target), 'promotion': promotion}, function(r) {
-                    if (r.includes("game over")) {
-                        document.querySelector('p').innerText = 'game over';
+                    if (r.includes("Game over")) {
+                        document.querySelector('p').innerText = 'Game over';
                     } else {
                         document.querySelector('p').innerText = '';
                         board.position(r);

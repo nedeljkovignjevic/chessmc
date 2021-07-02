@@ -1,4 +1,5 @@
 import random
+from copy import deepcopy
 
 import chess
 import traceback
@@ -8,10 +9,42 @@ from chessmc.utils import to_svg
 
 from flask import Flask, request
 
+from mcts import mcts
+
 
 app = Flask(__name__)
 
-STATE = State()
+
+class MCTSState(State):
+    # for lib mcts
+    def getCurrentPlayer(self):
+        return 1 if self.board.turn else -1
+
+    def getPossibleActions(self):
+        return self.legal_moves
+
+    def takeAction(self, action):
+        state = deepcopy(self)
+        state.board.push_san(str(action))
+        return state
+
+    def isTerminal(self):
+        return self.board.is_game_over()
+
+    def getReward(self):
+        result = self.board.result()
+        if result == '1-0' and self.board.turn:
+            return 1
+        elif result == '0-1' and not self.board.turn:
+            return 1
+        else:
+            return 0
+
+    def __eq__(self, other):
+        return self == other
+
+
+STATE = MCTSState()
 
 
 def random_move(state):
@@ -35,7 +68,8 @@ def self_play():
     ret = '<html><head>'
 
     while not state.board.is_game_over():
-        random_move(state)
+        move = state.board.san(random_move(state))
+        state.board.push_san(move)
         ret += '<img width=600 height=600 src="data:image/svg+xml;base64,%s"></img><br/>' % to_svg(state)
 
     print(state.board.result())
@@ -58,14 +92,18 @@ def move():
 
     try:
         STATE.board.push_san(move)
-        STATE.serialize()
-
-        computer_move = STATE.board.san(random_move(STATE))
         if STATE.board.is_game_over():
             return app.response_class(response="Game over!", status=200)
 
+        searcher = mcts(iterationLimit=50)
+        print(STATE.board.turn)
+        best_action = searcher.search(initialState=STATE)
+
+        computer_move = STATE.board.san(best_action)
         STATE.board.push_san(computer_move)
-        STATE.serialize()
+        if STATE.board.is_game_over():
+            return app.response_class(response="Game over!", status=200)
+
     except Exception:
         traceback.print_exc()
 
