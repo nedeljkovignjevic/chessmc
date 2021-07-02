@@ -1,3 +1,4 @@
+import copy
 import random
 from copy import deepcopy
 
@@ -10,7 +11,7 @@ from chessmc.utils import to_svg
 from flask import Flask, request
 
 from mcts import mcts
-
+from chessmc.mcts import GameState, uct_search
 
 app = Flask(__name__)
 
@@ -95,12 +96,17 @@ def move():
         if STATE.board.is_game_over():
             return app.response_class(response="Game over!", status=200)
 
-        searcher = mcts(iterationLimit=50)
-        print(STATE.board.turn)
-        best_action = searcher.search(initialState=STATE)
+        # searcher = mcts(iterationLimit=50)
+        # best_action = searcher.search(initialState=STATE)
+        #
+        # computer_move = STATE.board.san(best_action)
+        # STATE.board.push_san(computer_move)
 
-        computer_move = STATE.board.san(best_action)
-        STATE.board.push_san(computer_move)
+        computer_move = uct_search(GameState(state=copy.deepcopy(STATE)), n_simulations=200)
+        if chess.Move.from_uci(str(computer_move) + 'q') in STATE.board.legal_moves:
+            # promote to queen
+            computer_move.promotion = chess.QUEEN
+        STATE.board.push_san(STATE.board.san(computer_move))
         if STATE.board.is_game_over():
             return app.response_class(response="Game over!", status=200)
 

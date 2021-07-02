@@ -12,12 +12,12 @@ def get_training_data():
     result_counter = {'1/2-1/2': 0, '0-1': 0, '1-0': 0}
 
     sample_num = 0
-    for file in os.listdir('../content/data'):
+    for file in os.listdir('../data'):
 
-        if os.path.isdir(os.path.join('../content/data', file)):
+        if os.path.isdir(os.path.join('../data', file)):
             continue
 
-        pgn = open(os.path.join('../content/data', file), encoding='ISO-8859-1')
+        pgn = open(os.path.join('../data', file), encoding='ISO-8859-1')
 
         while True:
             game = chess.pgn.read_game(pgn)
@@ -29,6 +29,8 @@ def get_training_data():
                 continue
 
             result_counter[result] += 1
+            if result_counter[result] >= 5000:
+                continue
 
             result = results[result]
             board = game.board()
