@@ -65,7 +65,9 @@ def move():
         computer_move = uct_search(GameState(state=copy.deepcopy(STATE)), n_simulations=200)
         if STATE.board.is_game_over():
             return app.response_class(response="Game over!", status=200)
-        # print(computer_move)
+        if chess.Move.from_uci(str(computer_move) + 'q') in STATE.board.legal_moves:
+            # promote to queen
+            computer_move.promotion = chess.QUEEN
         STATE.board.push_san(STATE.board.san(computer_move))
     except Exception:
         traceback.print_exc()
