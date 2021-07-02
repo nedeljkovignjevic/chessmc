@@ -2,7 +2,7 @@ import copy
 import random
 from copy import deepcopy
 
-import chess
+import chess.engine
 import traceback
 
 from chessmc.state import State
@@ -46,6 +46,8 @@ class MCTSState(State):
 
 
 STATE = MCTSState()
+
+engine = chess.engine.SimpleEngine.popen_uci("stockfish_14_win_x64_avx2/stockfish_14_x64_avx2")
 
 
 def random_move(state):
@@ -102,11 +104,13 @@ def move():
         # computer_move = STATE.board.san(best_action)
         # STATE.board.push_san(computer_move)
 
-        computer_move = uct_search(GameState(state=copy.deepcopy(STATE)), n_simulations=200)
-        if chess.Move.from_uci(str(computer_move) + 'q') in STATE.board.legal_moves:
+        result = engine.play(STATE.board, chess.engine.Limit(time=0.1))
+        stockfish_move = result.move
+        #computer_move = uct_search(GameState(state=copy.deepcopy(STATE)), n_simulations=200)
+        if chess.Move.from_uci(str(stockfish_move) + 'q') in STATE.board.legal_moves:
             # promote to queen
-            computer_move.promotion = chess.QUEEN
-        STATE.board.push_san(STATE.board.san(computer_move))
+            stockfish_move.promotion = chess.QUEEN
+        STATE.board.push_san(STATE.board.san(stockfish_move))
         if STATE.board.is_game_over():
             return app.response_class(response="Game over!", status=200)
 
