@@ -1,15 +1,15 @@
-from typing import Mapping
 import torch.nn as nn
 import torch.utils.data
 
-from model import Model, ChessDataset
 from torch import optim
+from model import Model, ChessDataset
+from utils import stockfish_treshold
 
 
 class TrainerConfig:
     n_epochs = 100
     batch_size = 128
-    save_path = '../models/mlp.pth'
+    save_path = '../models/mlp-stockfish.pth'
     
 
 class Trainer:
@@ -37,14 +37,14 @@ class Trainer:
 
         train_loader = torch.utils.data.DataLoader(data, batch_size=config.batch_size, shuffle=True)
         optimizer = optim.Adam(model.parameters())
-        loss_fn = nn.MSELoss()
+        loss_fn = nn.CrossEntropyLoss()
 
         model.train()
         for epoch in range(config.n_epochs):
             cumulative_loss = 0
             n_losses = 0
             for batch_idx, (x, y) in enumerate(train_loader):
-                input, target = x.to(device).float(), y.to(device).unsqueeze(-1).float()
+                input, target = x.to(device).float(), y.apply_(stockfish_treshold).to(device).long()
 
                 optimizer.zero_grad()
                 output = model(input)
