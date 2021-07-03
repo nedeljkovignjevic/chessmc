@@ -51,6 +51,7 @@ def get_stockfish_training_data():
     inputs, outputs = [], []
 
     sample_num = 0
+    counter = 0
     for file in os.listdir('../data'):
 
         if os.path.isdir(os.path.join('../data', file)):
@@ -64,20 +65,35 @@ def get_stockfish_training_data():
                 break
 
             board = game.board()
-            print(f'parsing game {sample_num}, got {len(inputs)} samples')
+            counter = len(inputs)
+            print(f'parsing game {sample_num}, got {counter} samples')
             for i, move in enumerate(game.mainline_moves()):
                 board.push(move)
-                score = abs(engine.analyse(board, chess.engine.Limit(time=0.01))['score'].relative.score() / 100)
+                score = engine.analyse(board, chess.engine.Limit(time=0.01))['score']
+                if score is None:
+                    continue
+
+                score = score.relative.score()
                 if score is None:
                     continue
 
                 serialized_board = State(board).serialize()
                 inputs.append(serialized_board)
-                outputs.append(score)
+                outputs.append(abs(score / 100))
 
             sample_num += 1
 
-    return np.array(inputs), np.array(outputs)
+            if counter >= 500_000:
+                np.savez('../data/stockfish_processed500K.npz', inputs, outputs)
+
+            if counter >= 1_000_000:
+                np.savez('../data/stockfish_processed1M.npz', inputs, outputs)
+
+            if counter >= 1_500_000:
+                np.savez('../data/stockfish_processed1.5M.npz', inputs, outputs)
+                return
+
+    return
 
 
 if __name__ == '__main__':

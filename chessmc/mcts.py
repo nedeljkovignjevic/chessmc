@@ -66,7 +66,10 @@ class Node:
         while state.board.is_game_over() is not True:
             move = state.board.san(random_move(state))
             state.board.push_san(move)
-        winner = state.board.outcome().winner
+        winner = False #state.board.outcome().winner
+        result = state.board.result()
+        if (result == '1-0' and state.board.turn) or (result == '0-1' and not state.board.turn) or result == '1/2-1/2':
+            winner = True
         if winner is True:
             self.win = True
             self.total_value += 1
@@ -114,7 +117,10 @@ def visit_children(root, to_range):
         while state1.board.is_game_over() is not True:
             move = state1.board.san(random_move(state1))
             state1.board.push_san(move)
-        winner = state1.board.outcome().winner
+        winner = False #state1.board.outcome().winner
+        result = state1.board.result()
+        if (result == '1-0' and state1.board.turn) or (result == '0-1' and not state1.board.turn) or result == '1/2-1/2':
+            winner = True
         if winner is True:
             root.children[i].win = True
             root.children[i].total_value += 1
