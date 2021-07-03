@@ -70,9 +70,6 @@ def get_stockfish_training_data():
             for i, move in enumerate(game.mainline_moves()):
                 board.push(move)
                 score = engine.analyse(board, chess.engine.Limit(time=0.01))['score']
-                if score is None:
-                    continue
-
                 score = score.relative.score()
                 if score is None:
                     continue
@@ -83,14 +80,8 @@ def get_stockfish_training_data():
 
             sample_num += 1
 
-            if counter >= 500_000:
-                np.savez('../data/stockfish_processed500K.npz', inputs, outputs)
-
-            if counter >= 1_000_000:
+            if counter == 1_000_000:
                 np.savez('../data/stockfish_processed1M.npz', inputs, outputs)
-
-            if counter >= 1_500_000:
-                np.savez('../data/stockfish_processed1.5M.npz', inputs, outputs)
                 return
 
     return
