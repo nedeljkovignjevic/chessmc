@@ -67,10 +67,13 @@ def get_stockfish_training_data():
             print(f'parsing game {sample_num}, got {len(inputs)} samples')
             for i, move in enumerate(game.mainline_moves()):
                 board.push(move)
+                score = abs(engine.analyse(board, chess.engine.Limit(time=0.01))['score'].relative.score() / 100)
+                if score is None:
+                    continue
+
                 serialized_board = State(board).serialize()
-                info = engine.analyse(board, chess.engine.Limit(time=0.05))
                 inputs.append(serialized_board)
-                outputs.append(info['score'])
+                outputs.append(score)
 
             sample_num += 1
 

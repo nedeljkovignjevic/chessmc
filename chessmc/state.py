@@ -21,7 +21,8 @@ class State(object):
             for i in range(64):
                 piece = self.board.piece_at(i)
                 if piece is not None:
-                    state[idx] = piece_dict[k] if k == piece.symbol() else 0
+                    turn = 1 if self.board.turn else -1
+                    state[idx] = piece_dict[k] * turn if k == piece.symbol() else 0
                 else:
                     state[idx] = 0
 
