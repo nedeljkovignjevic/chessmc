@@ -60,9 +60,14 @@ def get_stockfish_training_data():
         pgn = open(os.path.join('../data', file), encoding='ISO-8859-1')
 
         while True:
+
             game = chess.pgn.read_game(pgn)
             if game is None:
                 break
+
+            if sample_num < 6225:
+                sample_num += 1
+                continue
 
             board = game.board()
             counter = len(inputs)
@@ -79,11 +84,11 @@ def get_stockfish_training_data():
                 outputs.append(abs(score / 100))
 
             sample_num += 1
-            if counter == 1_000_000:
+            if counter >= 1_000_000:
                 np.savez('../data/stockfish_processed1M.npz', inputs, outputs)
                 return
 
-    return
+    return np.array(inputs), np.array(outputs)
 
 
 if __name__ == '__main__':

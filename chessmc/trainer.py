@@ -8,9 +8,9 @@ from utils import stockfish_treshold
 
 
 class TrainerConfig:
-    n_epochs = 100
-    batch_size = 128
-    save_path = '../models/mlp-stockfish.pth'
+    n_epochs = 150
+    batch_size = 256
+    save_path = '../models/mlp-stockfish-leaky-3.pth'
     
 
 class Trainer:
