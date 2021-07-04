@@ -7,9 +7,9 @@ from utils import stockfish_treshold
 
 
 class TrainerConfig:
-    n_epochs = 100
-    batch_size = 128
-    save_path = '../models/mlp-stockfish.pth'
+    n_epochs = 150
+    batch_size = 256
+    save_path = '../models/mlp-stockfish-leaky-2.pth'
     
 
 class Trainer:
@@ -22,7 +22,7 @@ class Trainer:
         self.device = 'cpu'
         if torch.cuda.is_available():
             self.device = torch.cuda.current_device()
-            self.model = torch.nn.DataParallel(self.model).to(self.device)
+            self.model = self.model.to(self.device)
 
     def save_checkpoint(self, epoch, state_dict, optimizer_dict):
         torch.save({
@@ -36,7 +36,7 @@ class Trainer:
         model, data, config, device = self.model, self.data, self.config, self.device
 
         train_loader = torch.utils.data.DataLoader(data, batch_size=config.batch_size, shuffle=True)
-        optimizer = optim.Adam(model.parameters())
+        optimizer = optim.Adam(model.parameters(), lr=0.0015)
         loss_fn = nn.CrossEntropyLoss()
 
         model.train()

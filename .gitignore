@@ -25,6 +25,7 @@ pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/
 data/
+processed/
 stockfish_14_win_x64_avx2/
 .installed.cfg
 *.egg
