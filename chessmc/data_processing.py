@@ -51,6 +51,7 @@ def get_stockfish_training_data():
     inputs, outputs = [], []
 
     sample_num = 0
+    counter = 0
     for file in os.listdir('../data'):
 
         if os.path.isdir(os.path.join('../data', file)):
@@ -64,7 +65,8 @@ def get_stockfish_training_data():
                 break
 
             board = game.board()
-            print(f'parsing game {sample_num}, got {len(inputs)} samples')
+            counter = len(inputs)
+            print(f'parsing game {sample_num}, got {counter} samples')
             for i, move in enumerate(game.mainline_moves()):
                 board.push(move)
                 score = engine.analyse(board, chess.engine.Limit(time=0.01))['score']
@@ -77,11 +79,13 @@ def get_stockfish_training_data():
                 outputs.append(abs(score / 100))
 
             sample_num += 1
+            if counter == 1_000_000:
+                np.savez('../data/stockfish_processed1M.npz', inputs, outputs)
+                return
 
-
-    return np.array(inputs), np.array(outputs)
+    return
 
 
 if __name__ == '__main__':
-    x, y = get_stockfish_training_data()
-    np.savez('../data/stockfish_processed.npz', x, y)
+    get_stockfish_training_data()
+
