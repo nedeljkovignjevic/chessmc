@@ -9,8 +9,8 @@ from utils import stockfish_treshold
 
 class TrainerConfig:
     n_epochs = 150
-    batch_size = 256
-    save_path = '../models/mlp-stockfish-leaky-3.pth'
+    batch_size = 128
+    save_path = '../models/mlp-stockfish-new.pth'
     
 
 class Trainer:
@@ -81,9 +81,9 @@ class Trainer:
 
 def evaluate(test_data):
     model = Model()
-    test_loader = torch.utils.data.DataLoader(test_data, batch_size=512, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(test_data, batch_size=128, shuffle=True)
 
-    checkpoint = torch.load('../models/mlp-stockfish-leaky.pth', map_location=torch.device('cpu'))
+    checkpoint = torch.load('../models/mlp-stockfish-new.pth', map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
 
