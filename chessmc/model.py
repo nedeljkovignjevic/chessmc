@@ -1,6 +1,5 @@
 import numpy as np
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
@@ -38,20 +37,17 @@ class Model(nn.Module):
 
     def __init__(self):
         super(Model, self).__init__()
-        self.fc1 = nn.Linear(768, 512)
-        self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 50)
+        self.fc1 = nn.Linear(768, 256)
+        self.fc2 = nn.Linear(256, 64)
 
-        self.last = nn.Linear(50, 3)
+        self.last = nn.Linear(64, 3)
 
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
         x = F.leaky_relu(self.fc1(x))
         x = self.dropout(x)
         x = F.leaky_relu(self.fc2(x))
-        x = self.dropout(x)
-        x = F.leaky_relu(self.fc3(x))
         x = self.dropout(x)
 
         return self.last(x)

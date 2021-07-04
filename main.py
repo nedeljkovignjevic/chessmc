@@ -1,51 +1,20 @@
 import copy
 import random
-from copy import deepcopy
 
 import chess.engine
 import traceback
 
 from chessmc.state import State
+from chessmc.mcts import GameState, uct_search
 from chessmc.utils import to_svg
 
 from flask import Flask, request
 
-from chessmc.mcts import GameState, uct_search
 
 app = Flask(__name__)
 
 
-class MCTSState(State):
-    # for lib mcts
-    def getCurrentPlayer(self):
-        return 1 if self.board.turn else -1
-
-    def getPossibleActions(self):
-        return self.legal_moves
-
-    def takeAction(self, action):
-        state = deepcopy(self)
-        state.board.push_san(str(action))
-        return state
-
-    def isTerminal(self):
-        return self.board.is_game_over()
-
-    def getReward(self):
-        result = self.board.result()
-        if result == '1-0' and self.board.turn:
-            return 1
-        elif result == '0-1' and not self.board.turn:
-            return 1
-        else:
-            return 0
-
-    def __eq__(self, other):
-        return self == other
-
-
-STATE = MCTSState()
-
+STATE = State()
 engine = chess.engine.SimpleEngine.popen_uci("stockfish_14_win_x64_avx2/stockfish_14_x64_avx2")
 
 
@@ -97,18 +66,10 @@ def move():
         if STATE.board.is_game_over():
             return app.response_class(response="Game over!", status=200)
 
-        # searcher = mcts(iterationLimit=50)
-        # best_action = searcher.search(initialState=STATE)
-        #
-        # computer_move = STATE.board.san(best_action)
-        # STATE.board.push_san(computer_move)
-
-        # result = engine.play(STATE.board, chess.engine.Limit(time=0.1))
-        # stockfish_move = result.move
-        computer_move = uct_search(GameState(state=copy.deepcopy(STATE)), n_simulations=200)
+        computer_move = uct_search(GameState(state=copy.deepcopy(STATE)), n_simulations=50)
         if chess.Move.from_uci(str(computer_move) + 'q') in STATE.board.legal_moves:
-            # promote to queen
             computer_move.promotion = chess.QUEEN
+
         STATE.board.push_san(STATE.board.san(computer_move))
         if STATE.board.is_game_over():
             return app.response_class(response="Game over!", status=200)

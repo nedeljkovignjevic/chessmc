@@ -1,8 +1,18 @@
+from torch.functional import Tensor
+
+from chessmc.model import Model
+
+import torch
 import collections
 import copy
 import random
 
 import numpy as np
+
+
+model = Model()
+model.load_state_dict(torch.load('models/mlp-stockfish-new.pth', map_location=torch.device('cpu'))['state_dict'])
+model.eval()
 
 current_child = 0
 
@@ -94,6 +104,23 @@ class Node:
 
 def random_move(state):
     return random.choice([move for move in state.legal_moves])
+
+
+def net_evaluation_move(state):
+    successors = []
+    for move in state.legal_moves:
+        state.board.push_san(str(move))
+        successors.append(torch.argmax(model(Tensor(state.serialize()))))
+        state.board.pop()
+
+    if 0 in successors:
+        return state.legal_moves[successors.index(0)]
+    elif 2 in successors:
+        return state.legal_moves[successors.index(2)]
+    elif successors:
+        return successors[0]
+    else:
+        return []
 
 
 class TestNode(object):
