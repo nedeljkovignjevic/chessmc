@@ -84,14 +84,13 @@ def get_stockfish_training_data():
                 outputs.append(abs(score / 100))
 
             sample_num += 1
-
-            if counter >= 1_500_000:
-                np.savez('../processed/stockfish_processed15M.npz', inputs, outputs)
+            if counter >= 1_000_000:
+                np.savez('../data/stockfish_processed1M.npz', inputs, outputs)
                 return
 
     return np.array(inputs), np.array(outputs)
 
 
 if __name__ == '__main__':
-    x, y = get_stockfish_training_data()
-    np.savez('../processed/stockfish_processed.npz', x, y)
+    get_stockfish_training_data()
+

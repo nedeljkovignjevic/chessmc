@@ -26,6 +26,7 @@ share/python-wheels/
 *.egg-info/
 data/
 processed/
+models/
 stockfish_14_win_x64_avx2/
 .installed.cfg
 *.egg

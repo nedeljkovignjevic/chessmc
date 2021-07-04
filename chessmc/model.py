@@ -6,11 +6,25 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 
 
-class ChessDataset(Dataset):
+class ChessTrainDataset(Dataset):
     def __init__(self):
-        data2 = np.load('../processed/stockfish_processed15M.npz')
-        self.inputs = data2['arr_0']
-        self.outputs = data2['arr_1']
+        data = np.load('../processed/stockfish_processed15M.npz')
+        self.inputs = data['arr_0'][150_000:]
+        self.outputs = data['arr_1'][150_000:]
+        print(f'Data loaded, {self.inputs.shape}, {self.outputs.shape}')
+
+    def __len__(self):
+        return self.inputs.shape[0]
+
+    def __getitem__(self, index):
+        return self.inputs[index], self.outputs[index]
+
+
+class ChessValidationDataset(Dataset):
+    def __init__(self):
+        data = np.load('../processed/stockfish_processed15M.npz')
+        self.inputs = data['arr_0'][:150_000]
+        self.outputs = data['arr_1'][:150_000]
         print(f'Data loaded, {self.inputs.shape}, {self.outputs.shape}')
 
     def __len__(self):
@@ -24,9 +38,9 @@ class Model(nn.Module):
 
     def __init__(self):
         super(Model, self).__init__()
-        self.fc1 = nn.Linear(768, 1024)
-        self.fc2 = nn.Linear(1024, 512)
-        self.fc3 = nn.Linear(512, 50)
+        self.fc1 = nn.Linear(768, 512)
+        self.fc2 = nn.Linear(512, 256)
+        self.fc3 = nn.Linear(256, 50)
 
         self.last = nn.Linear(50, 3)
 
