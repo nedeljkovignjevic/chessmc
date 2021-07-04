@@ -17,11 +17,11 @@ https://www.pgnmentor.com/files.html
 
 ## Model
 Neural Network architecture: MLP -> input: 768 | hidden: 256 | hidden: 64 | output: 3<br>
-Dropout 0.5 on both hidden layers<br>
+Leaky ReLU and Dropout 0.5 on both hidden layers<br>
 Optimizer: Adam (with default params)<br>
 Trained 100 epochs on 500_000 examples with 128 batch size<br>
-Train loss: 0.008<br>
-Test accuracy: 73%  
+Train loss: 0.08<br>
+Test accuracy: 76%  
 
 ## Demo
 ![chessmc](https://user-images.githubusercontent.com/54076398/123994421-a7b34980-d9cd-11eb-8ef9-7e2174e5c09f.png)
