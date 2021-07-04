@@ -77,8 +77,7 @@ def get_stockfish_training_data():
                 outputs.append(abs(score / 100))
 
             sample_num += 1
-            np.savez('../data/stockfish_processed.npz', inputs, outputs)
-            return
+
 
     return np.array(inputs), np.array(outputs)
 
